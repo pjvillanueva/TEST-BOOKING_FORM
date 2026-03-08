@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #E5B318;
+  --accent-light: #F5D547;
+  --accent-dark: #C49A0F;
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+}
+
+/* Form input base */
+.input-base {
+  @apply w-full rounded-lg border border-gray-300 bg-white py-3 pr-4 text-gray-900 placeholder-gray-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-colors;
+}
+
+/* Left padding for inputs with leading icon – prevents placeholder/text overlap (icon ~28px + gap) */
+.input-with-leading-icon {
+  padding-left: 3.25rem; /* 52px */
+}
+
+.input-with-leading-icon-phone {
+  padding-left: 3.5rem; /* 56px – flag + gap */
+}
+
+/* Segmented control */
+.segment-btn {
+  @apply flex flex-1 items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-colors;
+}
+
+.segment-btn.active {
+  @apply bg-accent text-gray-900;
+}
+
+.segment-btn:not(.active) {
+  @apply bg-gray-100 text-gray-600 hover:bg-gray-200;
+}
+
+/* Google Places Autocomplete dropdown above form (legacy) */
+.pac-container {
+  z-index: 9999;
+}
+
+/* New PlaceAutocompleteElement – fill wrapper and force light theme */
+.place-autocomplete-wrapper {
+  position: relative;
+  min-height: 3rem;
+  width: 100%;
+  cursor: text;
+  color-scheme: light;
+}
+
+/* Make the Google element fill the wrapper so clicks hit the input */
+.place-autocomplete-wrapper > * {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 3rem !important;
+  pointer-events: auto !important;
+  color-scheme: light !important;
+}
+
+/* Force light input styling on Google Place Autocomplete (shadow DOM uses color-scheme) */
+gmp-place-autocomplete {
+  color-scheme: light !important;
+  --gmpx-color-surface: #ffffff !important;
+  --gmpx-color-on-surface: #111827 !important;
+  --gmpx-color-outline: #d1d5db !important;
+  --gmpx-color-outline-variant: #9ca3af !important;
+  --gmpx-font-family-base: inherit !important;
+}
