@@ -55,19 +55,6 @@ Without `GOOGLE_MAPS_API_KEY` or with the wrong API enabled, the distance/travel
 - Lucide React (icons)
 - Server-side Google Routes API call from `/api/distance`
 
-## Screen Recording (2–3 min)
-
-Suggested flow for the recording:
-
-1. **Form + layout** — Scroll through the form on desktop and resize to mobile to show responsiveness.
-2. **Validation** — Submit with empty/invalid fields; fix and show validation passes.
-3. **Phone**
-   - Enter a known number (e.g. `7744153244`) → see “Hi, Sarah!” and no extra fields.
-   - Enter an unknown number → see the message and first/last name + email; fill and submit.
-4. **Distance/time** — Enter pickup and drop-off addresses; show distance and travel time (and Refresh if desired).
-5. **Submit** — Submit the form and show the success screen.
-6. **Code** — Briefly show key files: `app/page.tsx`, `app/api/booking/route.ts`, `app/api/distance/route.ts`, `app/api/phone/lookup/route.ts`, `lib/validation.ts`.
-
 ## Project Structure
 
 ```
