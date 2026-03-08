@@ -42,29 +42,39 @@ export default function PlaceAutocomplete({
     AutocompleteSessionToken: new () => unknown
   } | null>(null)
 
-  // Load places library once
+  // Load places library (retry if importLibrary not ready yet with loading=async)
   useEffect(() => {
-    const w = window as Window & { google?: { maps: { importLibrary: (n: string) => Promise<unknown> } } }
-    if (!scriptReady || !w.google?.maps?.importLibrary) return
+    if (!scriptReady) return
     let cancelled = false
-    w.google.maps.importLibrary('places').then((lib: unknown) => {
-      if (cancelled) return
-      const pl = lib as { AutocompleteSuggestion?: { fetchAutocompleteSuggestions: (req: { input: string; sessionToken?: unknown }) => Promise<{ suggestions: PlaceSuggestion[] }> }; AutocompleteSessionToken?: new () => unknown }
-      if (pl.AutocompleteSuggestion && pl.AutocompleteSessionToken) {
-        placesLibRef.current = {
-          AutocompleteSuggestion: pl.AutocompleteSuggestion,
-          AutocompleteSessionToken: pl.AutocompleteSessionToken,
-        }
-        sessionTokenRef.current = new pl.AutocompleteSessionToken()
-        setPlacesReady(true)
+    const tryLoad = () => {
+      const w = window as Window & { google?: { maps: { importLibrary: (n: string) => Promise<unknown> } } }
+      if (!w.google?.maps?.importLibrary) {
+        if (!cancelled) setTimeout(tryLoad, 100)
+        return
       }
-    }).catch(() => {})
+      w.google.maps.importLibrary('places').then((lib: unknown) => {
+        if (cancelled) return
+        const pl = lib as { AutocompleteSuggestion?: { fetchAutocompleteSuggestions: (req: { input: string; sessionToken?: unknown }) => Promise<{ suggestions: PlaceSuggestion[] }> }; AutocompleteSessionToken?: new () => unknown }
+        if (pl.AutocompleteSuggestion && pl.AutocompleteSessionToken) {
+          placesLibRef.current = {
+            AutocompleteSuggestion: pl.AutocompleteSuggestion,
+            AutocompleteSessionToken: pl.AutocompleteSessionToken,
+          }
+          sessionTokenRef.current = new pl.AutocompleteSessionToken()
+          setPlacesReady(true)
+        }
+      }).catch(() => {
+        if (!cancelled) setTimeout(tryLoad, 200)
+      })
+    }
+    tryLoad()
     return () => { cancelled = true }
   }, [scriptReady])
 
   const fetchSuggestions = useCallback(async (input: string) => {
     const lib = placesLibRef.current
-    if (!lib || !input.trim()) {
+    const trimmed = input.trim()
+    if (!lib || !trimmed || trimmed.length < 2) {
       setSuggestions([])
       return
     }
@@ -72,13 +82,12 @@ export default function PlaceAutocomplete({
     try {
       const token = sessionTokenRef.current ?? new lib.AutocompleteSessionToken()
       const res = await lib.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-        input: input.trim(),
+        input: trimmed,
         sessionToken: token,
       })
       const list = Array.isArray(res?.suggestions) ? res.suggestions : []
-      const valid = list.filter((s: { placePrediction?: { text?: { toString: () => string } } }) => s?.placePrediction?.text)
-      setSuggestions(valid as PlaceSuggestion[])
-      setIsOpen(valid.length > 0)
+      setSuggestions(list as PlaceSuggestion[])
+      setIsOpen(list.length > 0)
     } catch {
       setSuggestions([])
     } finally {
@@ -95,7 +104,7 @@ export default function PlaceAutocomplete({
       setIsOpen(false)
       return
     }
-    if (!value.trim()) {
+    if (!value.trim() || value.trim().length < 2) {
       setSuggestions([])
       setIsOpen(false)
       return
@@ -172,7 +181,11 @@ export default function PlaceAutocomplete({
                 handleSelect(suggestion)
               }}
             >
-              {suggestion.placePrediction.text.toString()}
+              {suggestion?.placePrediction?.text != null
+                ? typeof suggestion.placePrediction.text === 'string'
+                  ? suggestion.placePrediction.text
+                  : (suggestion.placePrediction.text as { toString?: () => string }).toString?.() ?? ''
+                : ''}
             </li>
           ))}
         </ul>

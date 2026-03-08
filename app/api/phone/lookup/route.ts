@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Mock: known numbers with first names (in production this would be a DB lookup)
+// Mock: known numbers with first names (keys = normalized: digits only, no leading 1)
 const KNOWN_PHONES: Record<string, string> = {
-  '17744153244': 'Sarah',
-  '15551234567': 'John',
-  '15559876543': 'Maria',
+  '234567890': 'Sarah',    
+  '5551234567': 'John',
+  '5559876543': 'Maria',
 }
 
 function normalizePhone(phone: string): string {
